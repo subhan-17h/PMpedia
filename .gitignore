@@ -1,5 +1,7 @@
 # Ignore backend data folder
 backend/data/
+backend/data/processed/
+
 
 # Python
 __pycache__/
