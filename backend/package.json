@@ -1,0 +1,22 @@
+{
+  "name": "pmpedia-api",
+  "version": "1.0.0",
+  "description": "API server for PMPedia standards search and comparison",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "natural": "^6.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "author": "PMPedia Team",
+  "license": "MIT"
+}

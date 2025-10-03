@@ -1,0 +1,27 @@
+# Document Processing Dependencies for PMPedia Standards
+# Core document processing library
+docling>=1.0.0
+
+# Rich console output and progress bars
+rich>=13.0.0
+
+# GPU acceleration dependencies (install with --index-url https://download.pytorch.org/whl/cu118)
+torch>=2.0.0
+torchvision>=0.15.0
+
+# GPU-specific packages for better performance
+# Install with: pip install huggingface_hub[hf_xet] for better model download performance
+huggingface_hub[hf_xet]
+
+# Standard library modules (included with Python)
+# - logging
+# - re
+# - pathlib
+# - typing
+# - dataclasses
+# - datetime
+# - enum
+
+# Optional: For development and testing
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
