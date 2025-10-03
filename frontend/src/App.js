@@ -13,6 +13,7 @@ function App() {
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
   const [showAllFromStandards, setShowAllFromStandards] = useState(false);
+  const [fullContentView, setFullContentView] = useState(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -96,6 +97,16 @@ function App() {
     }
   };
 
+  const openFullContent = (result) => {
+    setFullContentView(result);
+    setActiveView('fullContent');
+  };
+
+  const closeFullContent = () => {
+    setFullContentView(null);
+    setActiveView('search');
+  };
+
   return (
     <div className="App">
       <header className="app-header">
@@ -143,8 +154,7 @@ function App() {
             <div className="results-header">
               <h2>🔍 Search Results</h2>
               <p>
-                Found <strong>{searchResults.totalResults}</strong> results 
-                for "<em>{searchResults.query}</em>"
+                Results for "<em>{searchResults.query}</em>"
               </p>
               
               {/* Toggle between top 1 per standard and all results */}
@@ -224,13 +234,21 @@ function App() {
                     </div>
                     
                     <div className="result-footer">
-                      <span className="section-number">Section: {result.section_number}</span>
-                      <span className="page-info">
-                        {result.page_start && result.page_end ? 
-                          `Pages: ${result.page_start}-${result.page_end}` : 
-                          `Level: ${result.level || 'N/A'}`
-                        }
-                      </span>
+                      <div className="result-meta">
+                        <span className="section-number">Section: {result.section_number}</span>
+                        <span className="page-info">
+                          {result.page_start && result.page_end ? 
+                            `Pages: ${result.page_start}-${result.page_end}` : 
+                            `Level: ${result.level || 'N/A'}`
+                          }
+                        </span>
+                      </div>
+                      <button 
+                        className="view-full-btn"
+                        onClick={() => openFullContent(result)}
+                      >
+                        📄 View Full Content
+                      </button>
                     </div>
                   </div>
                 ));
@@ -241,6 +259,59 @@ function App() {
 
         {activeView === 'comparison' && comparisonResults && !loading && (
           <ComparisonView results={comparisonResults} />
+        )}
+
+        {activeView === 'fullContent' && fullContentView && !loading && (
+          <div className="full-content-container">
+            <div className="full-content-header">
+              <button className="back-btn" onClick={closeFullContent}>
+                ← Back to Search Results
+              </button>
+              <div className="content-meta">
+                <span className={`standard-badge ${(fullContentView.standard || fullContentView.standardType || '').toLowerCase()}`}>
+                  {fullContentView.standard || fullContentView.standardType}
+                </span>
+                <h1>{fullContentView.section_title || fullContentView.title}</h1>
+                {fullContentView.parent_chain && fullContentView.parent_chain.length > 0 && (
+                  <div className="breadcrumb-full">
+                    {fullContentView.parent_chain.map((parent, idx) => (
+                      <span key={idx} className="breadcrumb-item">
+                        {parent.title || parent.section_number}
+                        {idx < fullContentView.parent_chain.length - 1 && ' > '}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <div className="section-info">
+                  <span className="section-number">Section: {fullContentView.section_number}</span>
+                  {fullContentView.page_start && fullContentView.page_end && (
+                    <span className="page-info">Pages: {fullContentView.page_start}-{fullContentView.page_end}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="full-content-body">
+              <div className="content-text">
+                {(fullContentView.text || fullContentView.content || '').split('\n\n').map((paragraph, index) => (
+                  <p key={index} className="content-paragraph">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+              
+              {fullContentView.crossReferences && fullContentView.crossReferences.length > 0 && (
+                <div className="cross-references">
+                  <h3>📚 Cross References</h3>
+                  <ul>
+                    {fullContentView.crossReferences.map((ref, index) => (
+                      <li key={index}>{ref}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {documentStats && (
