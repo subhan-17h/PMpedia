@@ -115,8 +115,23 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.display-toggle {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
 .show-all-btn,
-.show-less-btn {
+.show-less-btn,
+.show-all-standards-btn,
+.show-top-per-standard-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -126,12 +141,19 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 1rem;
   backdrop-filter: blur(10px);
 }
 
+.show-all-standards-btn,
+.show-top-per-standard-btn {
+  background: rgba(116, 75, 162, 0.3);
+  border: 1px solid rgba(116, 75, 162, 0.5);
+}
+
 .show-all-btn:hover,
-.show-less-btn:hover {
+.show-less-btn:hover,
+.show-all-standards-btn:hover,
+.show-top-per-standard-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);

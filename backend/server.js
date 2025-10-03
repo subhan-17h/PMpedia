@@ -174,12 +174,16 @@ class SearchEngine {
       }
     });
 
-    // If no specific standard is requested, return top 1 from each standard
-    let results;
+    // If no specific standard is requested, prepare both top 1 from each and all results
+    let results, allResults;
     if (!standardType) {
+      // Sort all scores first
+      const sortedScores = scores.sort((a, b) => b.score - a.score);
+      allResults = sortedScores.slice(0, maxResults);
+      
       // Group results by standard and get top 1 from each
       const resultsByStandard = {};
-      scores.forEach(score => {
+      sortedScores.forEach(score => {
         const standard = score.standardType;
         if (!resultsByStandard[standard] || score.score > resultsByStandard[standard].score) {
           resultsByStandard[standard] = score;
@@ -194,6 +198,7 @@ class SearchEngine {
       results = scores
         .sort((a, b) => b.score - a.score)
         .slice(0, maxResults);
+      allResults = results; // For specific standard, all results are the same
     }
 
     // Remove score information if hideScores option is set
@@ -202,10 +207,18 @@ class SearchEngine {
         const { score, exactMatches, partialMatches, titleMatches, matchedTerms, ...cleanResult } = result;
         return cleanResult;
       });
+      
+      if (allResults) {
+        allResults = allResults.map(result => {
+          const { score, exactMatches, partialMatches, titleMatches, matchedTerms, ...cleanResult } = result;
+          return cleanResult;
+        });
+      }
     }
 
     return {
       results,
+      allResults: allResults || results, // Include all results for frontend to choose from
       query,
       totalResults: scores.length,
       queryTerms: queryWords

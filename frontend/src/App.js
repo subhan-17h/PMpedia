@@ -12,6 +12,7 @@ function App() {
   const [activeView, setActiveView] = useState('search'); // 'search' or 'comparison'
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
+  const [showAllFromStandards, setShowAllFromStandards] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -38,6 +39,7 @@ function App() {
     setLoading(true);
     setError(null);
     setShowAllResults(false); // Reset to show limited results on new search
+    setShowAllFromStandards(false); // Reset to show top 1 per standard on new search
 
     try {
       const params = new URLSearchParams({
@@ -144,62 +146,95 @@ function App() {
                 Found <strong>{searchResults.totalResults}</strong> results 
                 for "<em>{searchResults.query}</em>"
               </p>
-              {searchResults.results.length > 3 && !showAllResults && (
-                <button 
-                  className="show-all-btn"
-                  onClick={() => setShowAllResults(true)}
-                >
-                  Show All Results ({searchResults.results.length})
-                </button>
-              )}
-              {showAllResults && searchResults.results.length > 3 && (
-                <button 
-                  className="show-less-btn"
-                  onClick={() => setShowAllResults(false)}
-                >
-                  Show Less (Top 3)
-                </button>
-              )}
+              
+              {/* Toggle between top 1 per standard and all results */}
+              <div className="toggle-buttons">
+                {!showAllFromStandards && searchResults.allResults && searchResults.allResults.length > searchResults.results.length && (
+                  <button 
+                    className="show-all-standards-btn"
+                    onClick={() => setShowAllFromStandards(true)}
+                  >
+                    Show All Results ({searchResults.allResults.length})
+                  </button>
+                )}
+                {showAllFromStandards && (
+                  <button 
+                    className="show-top-per-standard-btn"
+                    onClick={() => setShowAllFromStandards(false)}
+                  >
+                    Show Top 1 Per Standard ({searchResults.results.length})
+                  </button>
+                )}
+              </div>
+
+              {/* Current display toggle for limiting visible results */}
+              {(() => {
+                const currentResults = showAllFromStandards ? searchResults.allResults : searchResults.results;
+                return (
+                  <div className="display-toggle">
+                    {currentResults && currentResults.length > 3 && !showAllResults && (
+                      <button 
+                        className="show-all-btn"
+                        onClick={() => setShowAllResults(true)}
+                      >
+                        Show All Visible ({currentResults.length})
+                      </button>
+                    )}
+                    {showAllResults && currentResults && currentResults.length > 3 && (
+                      <button 
+                        className="show-less-btn"
+                        onClick={() => setShowAllResults(false)}
+                      >
+                        Show Less (Top 3)
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             
             <div className="results-grid">
-              {(showAllResults ? searchResults.results : searchResults.results.slice(0, 3))
-                .map((result, index) => (
-                <div key={`${result.standard}-${result.section_number}`} className="result-card">
-                  <div className="result-header">
-                    <span className={`standard-badge ${result.standard.toLowerCase()}`}>
-                      {result.standard}
-                    </span>
-                  </div>
-                  
-                  <h3>{result.section_title || result.title}</h3>
-                  
-                  {result.parent_chain && result.parent_chain.length > 0 && (
-                    <div className="breadcrumb">
-                      {result.parent_chain.map((parent, idx) => (
-                        <span key={idx} className="breadcrumb-item">
-                          {parent.title || parent.section_number}
-                          {idx < result.parent_chain.length - 1 && ' > '}
-                        </span>
-                      ))}
+              {(() => {
+                const currentResults = showAllFromStandards ? searchResults.allResults : searchResults.results;
+                const displayResults = showAllResults ? currentResults : (currentResults || []).slice(0, 3);
+                
+                return displayResults.map((result, index) => (
+                  <div key={`${result.standard}-${result.section_number}-${index}`} className="result-card">
+                    <div className="result-header">
+                      <span className={`standard-badge ${(result.standard || result.standardType || '').toLowerCase()}`}>
+                        {result.standard || result.standardType}
+                      </span>
                     </div>
-                  )}
-                  
-                  <div className="result-content">
-                    <p>{(result.text || result.content).substring(0, 300)}...</p>
+                    
+                    <h3>{result.section_title || result.title}</h3>
+                    
+                    {result.parent_chain && result.parent_chain.length > 0 && (
+                      <div className="breadcrumb">
+                        {result.parent_chain.map((parent, idx) => (
+                          <span key={idx} className="breadcrumb-item">
+                            {parent.title || parent.section_number}
+                            {idx < result.parent_chain.length - 1 && ' > '}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className="result-content">
+                      <p>{(result.text || result.content || '').substring(0, 300)}...</p>
+                    </div>
+                    
+                    <div className="result-footer">
+                      <span className="section-number">Section: {result.section_number}</span>
+                      <span className="page-info">
+                        {result.page_start && result.page_end ? 
+                          `Pages: ${result.page_start}-${result.page_end}` : 
+                          `Level: ${result.level || 'N/A'}`
+                        }
+                      </span>
+                    </div>
                   </div>
-                  
-                  <div className="result-footer">
-                    <span className="section-number">Section: {result.section_number}</span>
-                    <span className="page-info">
-                      {result.page_start && result.page_end ? 
-                        `Pages: ${result.page_start}-${result.page_end}` : 
-                        `Level: ${result.level || 'N/A'}`
-                      }
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         )}
