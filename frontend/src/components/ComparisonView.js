@@ -42,21 +42,22 @@ const ComparisonView = ({ results }) => {
         
         <div className="standard-toggles">
           {Object.keys(standardDisplayNames).map(standard => (
-            <label key={standard} className="standard-toggle">
+            <div key={standard} className="standard-toggle">
               <input
                 type="checkbox"
                 checked={selectedStandards.includes(standard)}
                 onChange={() => toggleStandard(standard)}
+                id={`toggle-${standard}`}
               />
-              <span className={`toggle-label ${standard}`}>
+              <label htmlFor={`toggle-${standard}`} className={`toggle-label ${standard}`}>
                 {standardDisplayNames[standard]}
-                {results.summary[standard] && (
+                {results.summary && results.summary[standard] && (
                   <span className="result-count">
                     ({results[standard]?.length || 0} results)
                   </span>
                 )}
-              </span>
-            </label>
+              </label>
+            </div>
           ))}
         </div>
       </div>

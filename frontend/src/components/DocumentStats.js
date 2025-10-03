@@ -2,7 +2,21 @@ import React from 'react';
 import './DocumentStats.css';
 
 const DocumentStats = ({ stats }) => {
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="document-stats">
+        <div className="stats-hero">
+          <h1 className="stats-title">📊 Document Statistics</h1>
+          <p className="stats-subtitle">Comprehensive analysis of project management standards</p>
+        </div>
+        
+        <div className="loading-stats">
+          <div className="spinner"></div>
+          <p>Loading document statistics...</p>
+        </div>
+      </div>
+    );
+  }
 
   const totalSections = Object.values(stats).reduce((sum, stat) => sum + (stat.validSections || 0), 0);
   const totalPages = Object.values(stats).reduce((sum, stat) => sum + (stat.totalPages || 0), 0);
@@ -10,29 +24,36 @@ const DocumentStats = ({ stats }) => {
 
   return (
     <div className="document-stats">
-      <h3>📊 Document Statistics</h3>
+      <div className="stats-hero">
+        <h1 className="stats-title">📊 Document Statistics</h1>
+        <p className="stats-subtitle">Comprehensive analysis of project management standards</p>
+      </div>
       
       <div className="stats-overview">
         <div className="overview-card">
-          <h4>📚 Total Collection</h4>
+          <div className="overview-icon">📚</div>
+          <h4>Standards Collection</h4>
           <div className="stat-number">{Object.keys(stats).length}</div>
-          <div className="stat-label">Standards</div>
+          <div className="stat-label">Active Standards</div>
         </div>
         
         <div className="overview-card">
-          <h4>📄 Total Sections</h4>
+          <div className="overview-icon">📄</div>
+          <h4>Searchable Content</h4>
           <div className="stat-number">{totalSections}</div>
-          <div className="stat-label">Searchable Sections</div>
+          <div className="stat-label">Indexed Sections</div>
         </div>
         
         <div className="overview-card">
-          <h4>📖 Total Pages</h4>
+          <div className="overview-icon">📖</div>
+          <h4>Document Volume</h4>
           <div className="stat-number">{totalPages}</div>
           <div className="stat-label">Pages Processed</div>
         </div>
         
         <div className="overview-card">
-          <h4>✅ Success Rate</h4>
+          <div className="overview-icon">✅</div>
+          <h4>Quality Score</h4>
           <div className="stat-number">{avgSuccessRate.toFixed(1)}%</div>
           <div className="stat-label">Average Quality</div>
         </div>

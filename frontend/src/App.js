@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SearchInterface from './components/SearchInterface';
 import ComparisonView from './components/ComparisonView';
 import DocumentStats from './components/DocumentStats';
+import Settings from './components/Settings';
 import './App.css';
 
 function App() {
@@ -9,11 +10,20 @@ function App() {
   const [comparisonResults, setComparisonResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeView, setActiveView] = useState('search'); // 'search' or 'comparison'
+  const [activeView, setActiveView] = useState('search'); // 'search', 'comparison', 'stats'
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
   const [showAllFromStandards, setShowAllFromStandards] = useState(false);
   const [fullContentView, setFullContentView] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
+  const [searchOptions, setSearchOptions] = useState({
+    standard: '',
+    maxResults: 10,
+    minScore: 0.1,
+    sectionTypes: '',
+    excludeAppendix: true
+  });
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -42,10 +52,13 @@ function App() {
     setShowAllResults(false); // Reset to show limited results on new search
     setShowAllFromStandards(false); // Reset to show top 1 per standard on new search
 
+    // Merge searchOptions with passed options
+    const searchParams = { ...searchOptions, ...options };
+
     try {
       const params = new URLSearchParams({
         q: query.trim(),
-        ...options
+        ...searchParams
       });
 
       const response = await fetch(`${API_BASE_URL}/search?${params}`);
@@ -107,33 +120,111 @@ function App() {
     setActiveView('search');
   };
 
+  const handleSearch = (query) => {
+    if (compareMode) {
+      performComparison(query);
+    } else {
+      performSearch(query);
+    }
+  };
+
+  const popularSearches = [
+    "Risk Management",
+    "Stakeholder Engagement", 
+    "Project Lifecycle",
+  ];
+
   return (
     <div className="App">
-      <header className="app-header">
-        <div className="header-content">
-          <h1>🎯 PMPedia</h1>
-          <p>Search & Compare Project Management Standards</p>
-          {documentStats && (
-            <div className="quick-stats">
-              {Object.entries(documentStats).map(([key, stats]) => (
-                <span key={key} className="stat-badge">
-                  {stats.standardType}: {stats.validSections} sections
-                </span>
-              ))}
-            </div>
-          )}
+      {/* Sidebar Navigation */}
+      <nav className={`app-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-logo">PMPedia</div>
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? '☰' : '✕'}
+          </button>
         </div>
-      </header>
+        
+        <ul className="sidebar-nav">
+          <li className="sidebar-nav-item">
+            <button 
+              className={`sidebar-nav-link ${activeView === 'search' ? 'active' : ''}`}
+              onClick={() => setActiveView('search')}
+            >
+              <span className="nav-icon">🔍</span>
+              <span className="nav-text">Search</span>
+            </button>
+          </li>
+          <li className="sidebar-nav-item">
+            <button 
+              className={`sidebar-nav-link ${activeView === 'comparison' ? 'active' : ''}`}
+              onClick={() => setActiveView('comparison')}
+            >
+              <span className="nav-icon">⚖️</span>
+              <span className="nav-text">Compare Standards</span>
+            </button>
+          </li>
+          <li className="sidebar-nav-item">
+            <button 
+              className={`sidebar-nav-link ${activeView === 'stats' ? 'active' : ''}`}
+              onClick={() => setActiveView('stats')}
+            >
+              <span className="nav-icon">📊</span>
+              <span className="nav-text">Document Stats</span>
+            </button>
+          </li>
+          <li className="sidebar-nav-item">
+            <button 
+              className={`sidebar-nav-link ${activeView === 'settings' ? 'active' : ''}`}
+              onClick={() => setActiveView('settings')}
+            >
+              <span className="nav-icon">⚙️</span>
+              <span className="nav-text">Settings</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-      <main className="app-main">
-        <SearchInterface 
-          onSearch={performSearch}
-          onCompare={performComparison}
-          loading={loading}
-          error={error}
-          activeView={activeView}
-          setActiveView={setActiveView}
-        />
+      <main className={`app-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        {/* Hero Section */}
+        {(activeView === 'search' || activeView === 'comparison') && (
+          <section className="hero-section">
+            <h1 className="hero-title">PMPedia</h1>
+            <p className="hero-subtitle">Compare Project Management Standards with Precision</p>
+            
+            <div className="search-container">
+              <SearchInterface 
+                onSearch={handleSearch}
+                onCompare={performComparison}
+                loading={loading}
+                error={error}
+                activeView={activeView}
+                setActiveView={setActiveView}
+                compareMode={compareMode}
+                setCompareMode={setCompareMode}
+                searchOptions={searchOptions}
+              />
+
+              <div className="popular-searches">
+                <h3 className="popular-title">Popular Searches</h3>
+                <div className="popular-chips">
+                  {popularSearches.map((search, index) => (
+                    <button 
+                      key={index} 
+                      className="popular-chip"
+                      onClick={() => handleSearch(search)}
+                    >
+                      {search}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {error && (
           <div className="error-message">
@@ -152,11 +243,6 @@ function App() {
         {activeView === 'search' && searchResults && !loading && (
           <div className="search-results-container">
             <div className="results-header">
-              <h2>🔍 Search Results</h2>
-              <p>
-                Results for "<em>{searchResults.query}</em>"
-              </p>
-              
               {/* Toggle between top 1 per standard and all results */}
               <div className="toggle-buttons">
                 {!showAllFromStandards && searchResults.allResults && searchResults.allResults.length > searchResults.results.length && (
@@ -201,6 +287,10 @@ function App() {
                   </div>
                 );
               })()}
+
+              <p>
+                Results for "<em>{searchResults.query}</em>"
+              </p>
             </div>
             
             <div className="results-grid">
@@ -230,7 +320,7 @@ function App() {
                     )}
                     
                     <div className="result-content">
-                      <p>{(result.text || result.content || '').substring(0, 300)}...</p>
+                      <p>{(result.text || result.content || '').substring(0, 180)}...</p>
                     </div>
                     
                     <div className="result-footer">
@@ -247,7 +337,7 @@ function App() {
                         className="view-full-btn"
                         onClick={() => openFullContent(result)}
                       >
-                        📄 View Full Content
+                        View More
                       </button>
                     </div>
                   </div>
@@ -259,6 +349,17 @@ function App() {
 
         {activeView === 'comparison' && comparisonResults && !loading && (
           <ComparisonView results={comparisonResults} />
+        )}
+
+        {activeView === 'stats' && (
+          <DocumentStats stats={documentStats} />
+        )}
+
+        {activeView === 'settings' && (
+          <Settings 
+            searchOptions={searchOptions}
+            onSearchOptionsChange={setSearchOptions}
+          />
         )}
 
         {activeView === 'fullContent' && fullContentView && !loading && (
@@ -314,14 +415,8 @@ function App() {
           </div>
         )}
 
-        {documentStats && (
-          <DocumentStats stats={documentStats} />
-        )}
       </main>
 
-      <footer className="app-footer">
-        <p>PMPedia - Powered by PMBOK 7, PRINCE2, and ISO 21500</p>
-      </footer>
     </div>
   );
 }
