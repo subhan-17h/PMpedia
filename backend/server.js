@@ -334,7 +334,7 @@ class SearchEngine {
     const standardMap = {
       'pmbok': 'PMBOK',
       'prince2': 'PRINCE2', 
-      'iso': 'ISO'
+      'iso': 'ISO_21502'
     };
 
     // Search each standard
@@ -452,7 +452,7 @@ app.get('/api/search', (req, res) => {
     const standardMap = {
       'pmbok': 'PMBOK',
       'prince2': 'PRINCE2', 
-      'iso': 'ISO'
+      'iso': 'ISO_21502'
     };
 
     const options = {
