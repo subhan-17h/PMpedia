@@ -35,7 +35,7 @@ class SearchEngine {
   }
 
   loadDocuments() {
-    const processedDir = path.join(__dirname, '..', 'backend', 'data', 'processed');
+    const processedDir = path.join(__dirname, 'data', 'new_processed');
     
     try {
       // Load processed JSON files
@@ -67,16 +67,16 @@ class SearchEngine {
   }
 
   indexDocument(document, standardType) {
-    // Handle both old structure (array with sections) and new structure (direct array)
-    const sections = Array.isArray(document) ? document : (document.sections || []);
+    // The new structure is always a direct array of sections
+    const sections = Array.isArray(document) ? document : [];
     
     sections.forEach((section, index) => {
       // Skip sections with minimal text
       if (!section.text || section.text.length < 50) return;
       
       // Filter out appendix, index, and table of contents sections
-      const title = (section.section_title || section.title || '').toLowerCase();
-      const content = (section.text || section.content || '').toLowerCase();
+      const title = (section.section_title || '').toLowerCase();
+      const content = (section.text || '').toLowerCase();
       
       const excludeKeywords = ['index', 'appendix', 'appendices', 'table of contents', 'contents', 'bibliography', 'references'];
       const shouldExclude = excludeKeywords.some(keyword => 
@@ -85,24 +85,24 @@ class SearchEngine {
       
       if (shouldExclude) return;
       
-      const sectionText = `${section.section_title || section.title || ''} ${section.text || section.content || ''}`;
+      const sectionText = `${section.section_title || ''} ${section.text || ''}`;
       
       // Add to TF-IDF index
       this.tfidf.addDocument(sectionText);
       
-      // Store section reference with new structure compatibility
+      // Store section reference using new structure fields
       this.sectionsIndex.push({
         standardType: section.standard || standardType.toUpperCase(),
-        sectionId: section.section_number || section.sectionId,
-        title: section.section_title || section.title,
-        content: section.text || section.content,
-        sectionType: section.section_type || 'section',
-        qualityScore: section.quality_score || 0.8, // Default quality for new structure
-        crossReferences: section.cross_references || [],
+        sectionId: section.section_number,
+        title: section.section_title,
+        content: section.text,
+        sectionType: 'section', // Default type for new structure
+        qualityScore: 0.9, // High quality for new processed data
+        crossReferences: [],
         level: section.level,
         parent_chain: section.parent_chain,
         page_start: section.page_start,
-        page_end: section.page_end,
+        page_end: section.page_end || section.page_start,
         section_number: section.section_number,
         section_title: section.section_title,
         standard: section.standard,
@@ -230,7 +230,7 @@ class SearchEngine {
   }
 
   countExactMatches(query, section) {
-    const text = `${section.title || section.section_title || ''} ${section.content || section.text || ''}`.toLowerCase();
+    const text = `${section.section_title || ''} ${section.text || ''}`.toLowerCase();
     const queryLower = query.toLowerCase();
     
     // Count exact phrase matches
@@ -246,7 +246,7 @@ class SearchEngine {
   }
 
   countPartialMatches(queryWords, section) {
-    const text = `${section.title || section.section_title || ''} ${section.content || section.text || ''}`.toLowerCase();
+    const text = `${section.section_title || ''} ${section.text || ''}`.toLowerCase();
     let partialCount = 0;
     
     queryWords.forEach(word => {
@@ -266,7 +266,7 @@ class SearchEngine {
   }
 
   countTitleMatches(query, section) {
-    const title = (section.title || section.section_title || '').toLowerCase();
+    const title = (section.section_title || '').toLowerCase();
     const queryLower = query.toLowerCase();
     
     // Higher weight for title matches
@@ -293,8 +293,8 @@ class SearchEngine {
   }
 
   isAppendixOrIndex(section) {
-    const title = (section.title || section.section_title || '').toLowerCase();
-    const content = (section.content || section.text || '').toLowerCase();
+    const title = (section.section_title || '').toLowerCase();
+    const content = (section.text || '').toLowerCase();
     
     const excludeKeywords = ['index', 'appendix', 'appendices', 'references'];
     
@@ -312,7 +312,7 @@ class SearchEngine {
   }
 
   getMatchedTerms(queryWords, section) {
-    const text = `${section.title || section.section_title || ''} ${section.content || section.text || ''}`.toLowerCase();
+    const text = `${section.section_title || ''} ${section.text || ''}`.toLowerCase();
     const matched = [];
     
     queryWords.forEach(term => {
@@ -374,14 +374,13 @@ class SearchEngine {
       if (documents[key]) {
         const doc = documents[key];
         
-        // Handle both old and new structure
+        // New structure - always an array of sections
         if (Array.isArray(doc)) {
-          // New structure - array of sections
           const validSections = doc.filter(section => 
             section.text && section.text.length >= 50
           );
           
-          const maxPage = Math.max(...doc.map(s => s.page_end || s.page_start || 0));
+          const maxPage = Math.max(...doc.map(s => s.page_start || 0));
           
           stats[key] = {
             title: doc[0]?.standard || key.toUpperCase(),
@@ -390,16 +389,6 @@ class SearchEngine {
             validSections: validSections.length,
             successRate: Math.round((validSections.length / doc.length) * 100),
             totalPages: maxPage || 0
-          };
-        } else {
-          // Old structure - object with metadata
-          stats[key] = {
-            title: doc.metadata?.title || key.toUpperCase(),
-            standardType: doc.metadata?.standard_type || key.toUpperCase(),
-            totalSections: doc.processing_stats?.total_sections || 0,
-            validSections: doc.processing_stats?.valid_sections || 0,
-            successRate: doc.processing_stats?.processing_success_rate || 0,
-            totalPages: doc.metadata?.total_pages || 0
           };
         }
       }
@@ -436,6 +425,85 @@ app.get('/api/stats', (req, res) => {
     res.json(stats);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Markdown serving endpoints
+app.get('/api/markdown/:documentId', (req, res) => {
+  const { documentId } = req.params;
+  
+  // Map document IDs to their file paths
+  const markdownPaths = {
+    'pmbok7': path.join(__dirname, '..', 'frontend', 'markdowns', 'pmbok7_output', 'pmbok7', 'auto', 'pmbok7.md'),
+    'prince2': path.join(__dirname, '..', 'frontend', 'markdowns', 'prince2_output', 'prince2', 'auto', 'prince2.md'),
+    'iso21502': path.join(__dirname, '..', 'frontend', 'markdowns', 'iso21502_output', 'iso21502', 'auto', 'iso21502.md'),
+    'iso21500': path.join(__dirname, '..', 'frontend', 'markdowns', 'iso21500_output', 'iso21500', 'auto', 'iso21500.md')
+  };
+  
+  const filePath = markdownPaths[documentId];
+  
+  if (!filePath) {
+    return res.status(404).json({ error: 'Document not found' });
+  }
+  
+  try {
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Markdown file not found' });
+    }
+    
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(content);
+  } catch (error) {
+    console.error('Error reading markdown file:', error);
+    res.status(500).json({ error: 'Failed to read markdown file' });
+  }
+});
+
+// Serve images for markdown documents
+app.get('/api/markdown/images/:documentId/:imageName', (req, res) => {
+  const { documentId, imageName } = req.params;
+  
+  // Map document IDs to their image directories
+  const imagePaths = {
+    'pmbok7': path.join(__dirname, '..', 'frontend', 'markdowns', 'pmbok7_output', 'pmbok7', 'auto', 'images'),
+    'prince2': path.join(__dirname, '..', 'frontend', 'markdowns', 'prince2_output', 'prince2', 'auto', 'images'),
+    'iso21502': path.join(__dirname, '..', 'frontend', 'markdowns', 'iso21502_output', 'iso21502', 'auto', 'images'),
+    'iso21500': path.join(__dirname, '..', 'frontend', 'markdowns', 'iso21500_output', 'iso21500', 'auto', 'images')
+  };
+  
+  const imageDir = imagePaths[documentId];
+  
+  if (!imageDir) {
+    return res.status(404).json({ error: 'Document not found' });
+  }
+  
+  const imagePath = path.join(imageDir, imageName);
+  
+  try {
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    
+    // Set appropriate content type based on file extension
+    const ext = path.extname(imageName).toLowerCase();
+    const contentTypes = {
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.webp': 'image/webp'
+    };
+    
+    const contentType = contentTypes[ext] || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+    
+    const imageBuffer = fs.readFileSync(imagePath);
+    res.send(imageBuffer);
+  } catch (error) {
+    console.error('Error reading image file:', error);
+    res.status(500).json({ error: 'Failed to read image file' });
   }
 });
 

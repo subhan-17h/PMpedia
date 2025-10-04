@@ -3,6 +3,7 @@ import SearchInterface from './components/SearchInterface';
 import ComparisonView from './components/ComparisonView';
 import DocumentStats from './components/DocumentStats';
 import Settings from './components/Settings';
+import MarkdownViewer from './components/MarkdownViewer';
 import './App.css';
 
 function App() {
@@ -10,7 +11,7 @@ function App() {
   const [comparisonResults, setComparisonResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeView, setActiveView] = useState('search'); // 'search', 'stats', 'settings', 'fullContent'
+  const [activeView, setActiveView] = useState('search'); // 'search', 'stats', 'settings', 'fullContent', 'markdown'
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
   const [showAllFromStandards, setShowAllFromStandards] = useState(false);
@@ -158,6 +159,15 @@ function App() {
           </li>
           <li className="sidebar-nav-item">
             <button 
+              className={`sidebar-nav-link ${activeView === 'markdown' ? 'active' : ''}`}
+              onClick={() => setActiveView('markdown')}
+            >
+              <span className="nav-icon">📄</span>
+              <span className="nav-text">Documents</span>
+            </button>
+          </li>
+          <li className="sidebar-nav-item">
+            <button 
               className={`sidebar-nav-link ${activeView === 'settings' ? 'active' : ''}`}
               onClick={() => setActiveView('settings')}
             >
@@ -210,10 +220,12 @@ function App() {
           </div>
         )}
 
-        {loading && (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Searching across all standards...</p>
+        {loading && activeView === 'search' && (
+          <div className="loading-overlay">
+            <div className="loading-content">
+              <div className="spinner"></div>
+              <p>Searching across all standards...</p>
+            </div>
           </div>
         )}
 
@@ -330,6 +342,10 @@ function App() {
 
         {activeView === 'stats' && (
           <DocumentStats stats={documentStats} />
+        )}
+
+        {activeView === 'markdown' && (
+          <MarkdownViewer />
         )}
 
         {activeView === 'settings' && (
