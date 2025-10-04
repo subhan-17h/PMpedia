@@ -1,15 +1,19 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
-const path = require('path');
 const natural = require('natural');
+const GeminiService = require('./services/geminiService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // In-memory storage for processed documents
 let documents = {
@@ -408,6 +412,9 @@ class SearchEngine {
 // Initialize search engine
 const searchEngine = new SearchEngine();
 
+// Initialize Gemini AI service
+const geminiService = new GeminiService();
+
 // Load documents on startup
 searchEngine.loadDocuments();
 
@@ -499,6 +506,59 @@ app.get('/api/compare', (req, res) => {
   }
 });
 
+// AI-powered comparison analysis
+app.post('/api/ai-compare', async (req, res) => {
+  try {
+    const { query, searchResults } = req.body;
+
+    if (!query || query.trim().length === 0) {
+      return res.status(400).json({ error: 'Query is required' });
+    }
+
+    if (!searchResults) {
+      return res.status(400).json({ error: 'Search results are required' });
+    }
+
+    // Check if Gemini service is configured
+    if (!geminiService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'AI service not available. Please configure GEMINI_API_KEY.' 
+      });
+    }
+
+    // Generate AI comparison
+    const aiAnalysis = await geminiService.compareStandards(query.trim(), searchResults);
+
+    res.json({
+      success: true,
+      query: query.trim(),
+      analysis: aiAnalysis.analysis,
+      timestamp: aiAnalysis.timestamp,
+      message: 'AI comparison completed successfully'
+    });
+
+  } catch (error) {
+    console.error('AI comparison error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate AI comparison',
+      details: error.message 
+    });
+  }
+});
+
+// Test Gemini API connection
+app.get('/api/ai-test', async (req, res) => {
+  try {
+    const testResult = await geminiService.testConnection();
+    res.json(testResult);
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Test failed: ' + error.message 
+    });
+  }
+});
+
 // Get specific document
 app.get('/api/document/:standard', (req, res) => {
   try {
@@ -523,7 +583,16 @@ app.listen(PORT, () => {
   console.log(`   GET /api/stats - Document statistics`);
   console.log(`   GET /api/search?q=<query> - Search across all standards`);
   console.log(`   GET /api/compare?q=<query> - Compare query across standards`);
+  console.log(`   POST /api/ai-compare - AI-powered comparison analysis`);
+  console.log(`   GET /api/ai-test - Test Gemini API connection`);
   console.log(`   GET /api/document/<standard> - Get full document`);
+  
+  // Check if AI service is configured
+  if (geminiService.isConfigured()) {
+    console.log(`🤖 Gemini AI service is configured and ready`);
+  } else {
+    console.log(`⚠️  Gemini AI service not configured (missing GEMINI_API_KEY)`);
+  }
 });
 
 // Handle graceful shutdown

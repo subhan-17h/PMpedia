@@ -10,13 +10,13 @@ function App() {
   const [comparisonResults, setComparisonResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeView, setActiveView] = useState('search'); // 'search', 'comparison', 'stats'
+  const [activeView, setActiveView] = useState('search'); // 'search', 'stats', 'settings', 'fullContent'
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
   const [showAllFromStandards, setShowAllFromStandards] = useState(false);
   const [fullContentView, setFullContentView] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [compareMode, setCompareMode] = useState(false);
+  const [searchMode, setSearchMode] = useState('search'); // 'search' or 'ai-comparison'
   const [searchOptions, setSearchOptions] = useState({
     standard: '',
     maxResults: 10,
@@ -56,19 +56,41 @@ function App() {
     const searchParams = { ...searchOptions, ...options };
 
     try {
-      const params = new URLSearchParams({
-        q: query.trim(),
-        ...searchParams
-      });
+      let response, results;
 
-      const response = await fetch(`${API_BASE_URL}/search?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`Search failed: ${response.statusText}`);
+      if (searchMode === 'ai-comparison') {
+        // First get comparison results
+        const compareParams = new URLSearchParams({
+          q: query.trim(),
+          maxResults: 5,
+          minScore: 0.1
+        });
+
+        response = await fetch(`${API_BASE_URL}/compare?${compareParams}`);
+        
+        if (!response.ok) {
+          throw new Error(`Comparison failed: ${response.statusText}`);
+        }
+
+        results = await response.json();
+        setComparisonResults(results);
+      } else {
+        // Regular search
+        const params = new URLSearchParams({
+          q: query.trim(),
+          ...searchParams
+        });
+
+        response = await fetch(`${API_BASE_URL}/search?${params}`);
+        
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.statusText}`);
+        }
+
+        results = await response.json();
+        setSearchResults(results);
       }
 
-      const results = await response.json();
-      setSearchResults(results);
       setActiveView('search');
 
     } catch (error) {
@@ -79,36 +101,7 @@ function App() {
     }
   };
 
-  const performComparison = async (query, options = {}) => {
-    if (!query.trim()) return;
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = new URLSearchParams({
-        q: query.trim(),
-        maxResults: 5,
-        ...options
-      });
-
-      const response = await fetch(`${API_BASE_URL}/compare?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`Comparison failed: ${response.statusText}`);
-      }
-
-      const results = await response.json();
-      setComparisonResults(results);
-      setActiveView('comparison');
-
-    } catch (error) {
-      setError(error.message);
-      console.error('Comparison error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const openFullContent = (result) => {
     setFullContentView(result);
@@ -121,11 +114,7 @@ function App() {
   };
 
   const handleSearch = (query) => {
-    if (compareMode) {
-      performComparison(query);
-    } else {
-      performSearch(query);
-    }
+    performSearch(query);
   };
 
   const popularSearches = [
@@ -160,15 +149,6 @@ function App() {
           </li>
           <li className="sidebar-nav-item">
             <button 
-              className={`sidebar-nav-link ${activeView === 'comparison' ? 'active' : ''}`}
-              onClick={() => setActiveView('comparison')}
-            >
-              <span className="nav-icon">⚖️</span>
-              <span className="nav-text">Compare Standards</span>
-            </button>
-          </li>
-          <li className="sidebar-nav-item">
-            <button 
               className={`sidebar-nav-link ${activeView === 'stats' ? 'active' : ''}`}
               onClick={() => setActiveView('stats')}
             >
@@ -190,7 +170,7 @@ function App() {
 
       <main className={`app-main ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {/* Hero Section */}
-        {(activeView === 'search' || activeView === 'comparison') && (
+        {activeView === 'search' && (
           <section className="hero-section">
             <h1 className="hero-title">PMPedia</h1>
             <p className="hero-subtitle">Compare Project Management Standards with Precision</p>
@@ -198,13 +178,10 @@ function App() {
             <div className="search-container">
               <SearchInterface 
                 onSearch={handleSearch}
-                onCompare={performComparison}
                 loading={loading}
                 error={error}
-                activeView={activeView}
-                setActiveView={setActiveView}
-                compareMode={compareMode}
-                setCompareMode={setCompareMode}
+                searchMode={searchMode}
+                setSearchMode={setSearchMode}
                 searchOptions={searchOptions}
               />
 
@@ -240,7 +217,7 @@ function App() {
           </div>
         )}
 
-        {activeView === 'search' && searchResults && !loading && (
+        {activeView === 'search' && searchMode === 'search' && searchResults && !loading && (
           <div className="search-results-container">
             <div className="results-header">
               {/* Toggle between top 1 per standard and all results */}
@@ -347,7 +324,7 @@ function App() {
           </div>
         )}
 
-        {activeView === 'comparison' && comparisonResults && !loading && (
+        {activeView === 'search' && searchMode === 'ai-comparison' && comparisonResults && !loading && (
           <ComparisonView results={comparisonResults} />
         )}
 
