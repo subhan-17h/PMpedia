@@ -1,24 +1,32 @@
-/* Markdown Viewer Styles - Dark Theme */
+/* Markdown Viewer Styles - Modern Dark Theme */
 .markdown-viewer {
   display: flex;
   height: 100vh;
-  background: #0f172a;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  gap: 1rem;
+  padding: 1rem;
 }
 
 .markdown-sidebar {
   width: 320px;
-  background: #1e293b;
-  border-right: 1px solid #334155;
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(51, 65, 85, 0.3);
   display: flex;
   flex-direction: column;
   min-height: 0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .markdown-sidebar-header {
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid #334155;
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3);
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: white;
+  border-radius: 20px 20px 0 0;
+  position: relative;
 }
 
 .markdown-sidebar-header h2 {
@@ -36,37 +44,49 @@
 .document-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 0;
+  padding: 12px;
 }
 
 .document-item {
-  padding: 16px 20px;
+  padding: 18px 20px;
   cursor: pointer;
-  border-bottom: 1px solid #334155;
-  transition: all 0.2s ease;
+  margin: 8px 0;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  background: rgba(51, 65, 85, 0.2);
+  border: 1px solid rgba(51, 65, 85, 0.3);
 }
 
 .document-item:hover {
-  background: #334155;
-  border-left: 4px solid #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -8px rgba(99, 102, 241, 0.3);
 }
 
 .document-item.active {
-  background: #312e81;
-  border-left: 4px solid #6366f1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(124, 58, 237, 0.15) 100%);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5), 0 8px 25px -8px rgba(99, 102, 241, 0.4);
 }
 
 .document-item.active::before {
-  content: '';
+  content: '✓';
   position: absolute;
-  right: 16px;
+  right: 18px;
   top: 50%;
   transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
+  width: 24px;
+  height: 24px;
   background: #6366f1;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .document-title {
@@ -87,8 +107,13 @@
 .markdown-content {
   flex: 1;
   overflow-y: auto;
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(51, 65, 85, 0.3);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
   min-height: 0;
+  overflow: hidden;
 }
 
 .welcome-message {
@@ -125,11 +150,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  background: #1e293b;
-  border-radius: 8px;
-  border: 1px solid #334155;
+  padding: 18px;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(51, 65, 85, 0.4);
   color: #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
 }
 
 .feature-icon {
@@ -170,6 +203,12 @@
 .error-message {
   text-align: center;
   max-width: 400px;
+  padding: 32px;
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .error-message h3 {
@@ -185,19 +224,22 @@
 }
 
 .retry-button {
-  background: #6366f1;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
+  padding: 14px 28px;
+  border-radius: 12px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 .retry-button:hover {
-  background: #4f46e5;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
 
 .markdown-document {
@@ -207,10 +249,12 @@
 }
 
 .document-header {
-  padding: 32px 40px 24px;
+  padding: 40px 40px 28px;
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   color: white;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+  border-radius: 20px 20px 0 0;
+  position: relative;
 }
 
 .document-main-title {
@@ -231,10 +275,10 @@
   flex: 1;
   padding: 40px;
   overflow-y: auto;
-  line-height: 1.7;
+  line-height: 1.8;
   color: #e2e8f0;
   max-width: none;
-  background: #0f172a;
+  background: transparent;
 }
 
 /* Markdown Content Styling - Dark Theme */
@@ -286,10 +330,13 @@
 
 .markdown-content-body blockquote {
   margin: 1.5rem 0;
-  padding: 1rem 1.5rem;
+  padding: 1.5rem;
   border-left: 4px solid #6366f1;
-  background: #1e293b;
-  border-radius: 0 6px 6px 0;
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 0 12px 12px 0;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-left: 4px solid #6366f1;
 }
 
 .markdown-content-body blockquote p {
@@ -299,12 +346,13 @@
 }
 
 .inline-code {
-  background: #334155;
+  background: rgba(51, 65, 85, 0.8);
   color: #fbbf24;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 0.875rem;
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 .code-block-wrapper {
@@ -312,13 +360,15 @@
 }
 
 .code-block-wrapper pre {
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
   color: #e2e8f0;
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: 2rem;
+  border-radius: 16px;
   overflow-x: auto;
-  line-height: 1.5;
-  border: 1px solid #334155;
+  line-height: 1.6;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .code-block-wrapper code {
@@ -329,14 +379,17 @@
 .table-wrapper {
   overflow-x: auto;
   margin: 1.5rem 0;
-  border-radius: 8px;
-  border: 1px solid #334155;
+  border-radius: 16px;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 }
 
 .table-wrapper table {
   width: 100%;
   border-collapse: collapse;
-  background: #1e293b;
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .table-wrapper th,
@@ -348,14 +401,14 @@
 }
 
 .table-wrapper th {
-  background: #0f172a;
+  background: rgba(15, 23, 42, 0.9);
   font-weight: 600;
   color: #f1f5f9;
-  border-bottom: 2px solid #334155;
+  border-bottom: 2px solid rgba(51, 65, 85, 0.6);
 }
 
 .table-wrapper tbody tr:hover {
-  background: #334155;
+  background: rgba(51, 65, 85, 0.6);
 }
 
 .table-wrapper tbody tr:last-child td {
@@ -365,9 +418,10 @@
 .markdown-content-body img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  margin: 1.5rem 0;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+  border: 1px solid rgba(51, 65, 85, 0.3);
 }
 
 .markdown-content-body hr {
@@ -410,26 +464,29 @@
   .markdown-viewer {
     flex-direction: column;
     height: auto;
+    gap: 0.75rem;
+    padding: 0.75rem;
   }
   
   .markdown-sidebar {
     width: 100%;
-    max-height: 300px;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
+    max-height: 280px;
+    border-radius: 16px;
   }
   
   .markdown-content {
     flex: none;
     min-height: calc(100vh - 300px);
+    border-radius: 16px;
   }
   
   .markdown-content-body {
-    padding: 16px;
+    padding: 20px;
   }
   
   .document-header {
-    padding: 16px;
+    padding: 24px 20px;
+    border-radius: 16px 16px 0 0;
   }
   
   .document-main-title {
@@ -438,5 +495,14 @@
   
   .feature-list {
     grid-template-columns: 1fr;
+  }
+  
+  .document-list {
+    padding: 8px;
+  }
+  
+  .document-item {
+    margin: 6px 0;
+    padding: 16px 18px;
   }
 }

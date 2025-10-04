@@ -547,7 +547,9 @@ body {
 }
 
 .standard-badge.iso,
-.standard-badge.iso_21502 {
+.standard-badge.iso21502,
+.standard-badge.iso_21502,
+.standard-badge.iso21500 {
   background: linear-gradient(135deg, var(--warning-color), #e67e22);
   color: white;
   box-shadow: 0 4px 20px rgba(255, 159, 10, 0.3);
@@ -726,12 +728,19 @@ body {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
 }
 
+.content-meta {
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
 .content-meta h1 {
   font-size: 3rem;
   margin: 1rem 0;
   font-weight: 700;
   position: relative;
   z-index: 1;
+  line-height: 1.2;
 }
 
 .breadcrumb-full {
@@ -753,9 +762,46 @@ body {
   display: flex;
   gap: 1rem;
   margin-top: 1.5rem;
-  font-size: 0.9rem;
   position: relative;
   z-index: 1;
+}
+
+.full-content-container .section-info {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1.25rem 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.full-content-container .section-info .section-number,
+.full-content-container .section-info .page-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(80, 200, 120, 0.15));
+  border-radius: 12px;
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+}
+
+.full-content-container .section-info .section-number::before {
+  content: "📄";
+  font-size: 1.1rem;
+}
+
+.full-content-container .section-info .page-info::before {
+  content: "📖";
+  font-size: 1.1rem;
 }
 
 .full-content-body {

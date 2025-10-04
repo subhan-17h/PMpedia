@@ -316,8 +316,8 @@ function App() {
                       <div className="result-meta">
                         <span className="section-number">Section: {result.section_number}</span>
                         <span className="page-info">
-                          {result.page_start && result.page_end ? 
-                            `Pages: ${result.page_start}-${result.page_end}` : 
+                          {result.page_start ? 
+                            `Page: ${result.page_start}` : 
                             `Level: ${result.level || 'N/A'}`
                           }
                         </span>
@@ -378,8 +378,8 @@ function App() {
                 )}
                 <div className="section-info">
                   <span className="section-number">Section: {fullContentView.section_number}</span>
-                  {fullContentView.page_start && fullContentView.page_end && (
-                    <span className="page-info">Pages: {fullContentView.page_start}-{fullContentView.page_end}</span>
+                  {fullContentView.page_start && (
+                    <span className="page-info">Page: {fullContentView.page_start}</span>
                   )}
                 </div>
               </div>

@@ -35,12 +35,6 @@ const MarkdownViewer = () => {
         title: 'ISO 21502:2020', 
         path: 'iso21502_output/iso21502/auto/iso21502.md',
         description: 'Project, programme and portfolio management — Guidance on project management'
-      },
-      { 
-        id: 'iso21500', 
-        title: 'ISO 21500:2012', 
-        path: 'iso21500_output/iso21500/auto/iso21500.md',
-        description: 'Guidance on project management'
       }
     ];
     
