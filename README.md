@@ -1,6 +1,6 @@
 # PMpedia 📚
 
-**PMpedia** is a comprehensive project management standards search and comparison platform that enables users to explore, search, and compare content across multiple project management frameworks including PMBOK 7, PRINCE2, and ISO 21500.
+**PMpedia** is a comprehensive project management standards search and comparison platform that enables users to explore, search, and compare content across multiple project management frameworks including PMBOK 7, PRINCE2, ISO 21500, and ISO 21502.
 
 ## 🌟 Features
 
@@ -8,11 +8,12 @@
 - **🔍 Intelligent Search**: Advanced semantic search across multiple project management standards
 - **⚖️ Cross-Standard Comparison**: Side-by-side comparison of search results from different standards
 - **📊 Document Statistics**: Comprehensive analytics of processed documents
+- **📖 Markdown Viewer**: Live preview of formatted markdown documents with navigation
 - **🎯 Advanced Filtering**: Filter results by document type, relevance, and content
-- **💡 Interactive UI**: Modern, responsive interface with dark/light theme support
+- **💡 Interactive UI**: Modern, responsive interface with consistent dark theme
 
 ### Search Capabilities
-- **Multi-Standard Search**: Simultaneous search across PMBOK 7, PRINCE2, and ISO 21500
+- **Multi-Standard Search**: Simultaneous search across PMBOK 7, PRINCE2, ISO 21500, and ISO 21502
 - **Semantic Matching**: Intelligent content matching using natural language processing
 - **Context-Aware Results**: Results include section hierarchies and parent context
 - **Expandable Content**: Toggle between summary and full content views
@@ -24,13 +25,22 @@
 - **Breadcrumb Navigation**: Clear hierarchical context for each result
 - **Summary Statistics**: Quick overview of search results across all standards
 
+### Document Viewing Features
+- **Markdown Preview**: Rich markdown rendering with full document formatting
+- **Interactive Navigation**: Browse through different standards and sections
+- **Mathematical Notation**: Support for KaTeX mathematical expressions
+- **Image Support**: Embedded images and diagrams from source documents
+- **Responsive Layout**: Optimized viewing experience across all devices
+
 ## 🏗️ Architecture
 
 ### Frontend (React.js)
 - **Modern React Application**: Built with React 19.2.0 and functional components
 - **Component-Based Architecture**: Modular design with reusable components
 - **Responsive Design**: Optimized for desktop and mobile devices
-- **Glass Morphism UI**: Modern design with backdrop blur effects
+- **Glass Morphism UI**: Modern design with backdrop blur effects and rounded borders
+- **Markdown Rendering**: Advanced markdown support with react-markdown, remark-gfm, and rehype-katex
+- **Consistent Dark Theme**: Professional dark interface with accent color coding
 
 ### Backend (Node.js + Express)
 - **RESTful API**: Clean API endpoints for search and comparison
@@ -55,6 +65,7 @@ PMpedia/
 │   │   │   ├── SearchInterface.js      # Main search interface
 │   │   │   ├── ComparisonView.js       # Cross-standard comparison
 │   │   │   ├── DocumentStats.js       # Analytics dashboard
+│   │   │   ├── MarkdownViewer.js       # Document preview component
 │   │   │   └── Settings.js             # Application settings
 │   │   ├── App.js           # Main application component
 │   │   └── index.js         # Application entry point
@@ -69,6 +80,11 @@ PMpedia/
 │   │       ├── pmbok.json
 │   │       ├── prince2.json
 │   │       └── iso21502.json
+│   ├── markdowns/          # Markdown document files
+│   │   ├── iso21500_output/
+│   │   ├── iso21502_output/
+│   │   ├── pmbok7_output/
+│   │   └── prince2_output/
 │   ├── server.js           # Express server and API endpoints
 │   ├── process_pdf.py      # Python document processing script
 │   ├── package.json        # Backend dependencies
@@ -106,6 +122,18 @@ PMpedia/
    npm install
    ```
 
+### Key Dependencies
+
+#### Frontend
+- **react-markdown**: Advanced markdown rendering with custom components
+- **remark-gfm**: GitHub Flavored Markdown support (tables, strikethrough, task lists)
+- **rehype-katex & remark-math**: Mathematical expression rendering
+- **React 19.2.0**: Latest React with improved performance and features
+
+#### Backend  
+- **Express.js**: Web application framework for API endpoints
+- **Python**: Document processing and text extraction utilities
+
 4. **Process Documents (Optional)**
    ```bash
    cd ../backend
@@ -132,7 +160,28 @@ PMpedia/
 3. **Access the Application**
    Open your browser and navigate to `http://localhost:3000`
 
-## 🔧 API Endpoints
+## � Usage Guide
+
+### Navigation
+- **Search Interface**: Main search functionality with cross-standard comparison
+- **Document Stats**: Analytics and statistics dashboard
+- **Markdown Viewer**: Browse and read formatted documents with live preview
+- **Settings**: Application configuration and preferences
+
+### Using the Markdown Viewer
+1. **Select Documents**: Click "Markdown Viewer" in the sidebar
+2. **Choose Standard**: Select from PMBOK 7, PRINCE2, ISO 21500, or ISO 21502
+3. **Browse Content**: Navigate through formatted sections with proper styling
+4. **View Images**: Embedded diagrams and figures display automatically
+5. **Mathematical Expressions**: KaTeX renders formulas and equations seamlessly
+
+### Search Features
+- Use natural language queries for best results
+- Enable/disable specific standards using toggles
+- View results in summary or full content modes
+- Compare findings across multiple standards simultaneously
+
+## �🔧 API Endpoints
 
 ### Search API
 - **GET** `/api/search?q={query}&standards={standards}&limit={limit}`
@@ -152,6 +201,16 @@ PMpedia/
   - Get document statistics and metadata
   - Returns section counts, processing information, and document details
 
+### Markdown API
+- **GET** `/api/markdown/documents`
+  - Get list of available markdown documents
+  - Returns document metadata and availability status
+
+- **GET** `/api/markdown/{document}`
+  - Retrieve specific markdown document content
+  - Supports: `iso21500`, `iso21502`, `pmbok7`, `prince2`
+  - Returns formatted markdown with embedded images and metadata
+
 ## 📋 Supported Standards
 
 ### PMBOK 7 (Project Management Body of Knowledge)
@@ -168,6 +227,11 @@ PMpedia/
 - **Publisher**: International Organization for Standardization
 - **Focus**: International standard for project management
 - **Content**: Process groups, knowledge areas, and best practices
+
+### ISO 21502 (Project, Programme and Portfolio Management)
+- **Publisher**: International Organization for Standardization
+- **Focus**: Guidance on project, programme and portfolio management
+- **Content**: Management principles, processes, and organizational governance
 
 ## 🛠️ Development
 
@@ -214,6 +278,8 @@ cd backend
 curl "http://localhost:5000/api/search?q=risk&standards=pmbok,prince2,iso&limit=5"
 curl "http://localhost:5000/api/compare?q=stakeholder"
 curl "http://localhost:5000/api/stats"
+curl "http://localhost:5000/api/markdown/documents"
+curl "http://localhost:5000/api/markdown/pmbok7"
 ```
 
 ### Frontend Testing
@@ -278,15 +344,17 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - **Project Management Institute (PMI)** - PMBOK Guide
 - **AXELOS** - PRINCE2 Methodology
-- **International Organization for Standardization** - ISO 21500 Standard
+- **International Organization for Standardization** - ISO 21500 & ISO 21502 Standards
 - **React Community** - Frontend framework and ecosystem
 - **Node.js Community** - Backend runtime and packages
+- **react-markdown Contributors** - Advanced markdown rendering capabilities
+- **KaTeX Team** - Mathematical expression rendering
 
 ## 📧 Contact
 
 - **Project Repository**: [PMpedia on GitHub](https://github.com/subhan-17h/PMpedia)
 - **Developer**: Subhan
-- **Version**: 1.0.0
+- **Version**: 1.1.0
 
 ---
 
