@@ -4,6 +4,7 @@ import ComparisonView from './components/ComparisonView';
 import DocumentStats from './components/DocumentStats';
 import Settings from './components/Settings';
 import MarkdownViewer from './components/MarkdownViewer';
+import ProcessProposal from './components/ProcessProposal';
 import './App.css';
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
   const [comparisonResults, setComparisonResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeView, setActiveView] = useState('search'); // 'search', 'stats', 'settings', 'fullContent', 'markdown'
+  const [activeView, setActiveView] = useState('search'); // 'search', 'stats', 'settings', 'fullContent', 'markdown', 'process-proposal'
   const [documentStats, setDocumentStats] = useState(null);
   const [showAllResults, setShowAllResults] = useState(false);
   const [showAllFromStandards, setShowAllFromStandards] = useState(false);
@@ -164,6 +165,15 @@ function App() {
             >
               <span className="nav-icon">📄</span>
               <span className="nav-text">Documents</span>
+            </button>
+          </li>
+          <li className="sidebar-nav-item">
+            <button 
+              className={`sidebar-nav-link ${activeView === 'process-proposal' ? 'active' : ''}`}
+              onClick={() => setActiveView('process-proposal')}
+            >
+              <span className="nav-icon">🎯</span>
+              <span className="nav-text">Process Proposal</span>
             </button>
           </li>
           <li className="sidebar-nav-item">
@@ -346,6 +356,10 @@ function App() {
 
         {activeView === 'markdown' && (
           <MarkdownViewer />
+        )}
+
+        {activeView === 'process-proposal' && (
+          <ProcessProposal />
         )}
 
         {activeView === 'settings' && (

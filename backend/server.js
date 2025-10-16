@@ -627,6 +627,50 @@ app.get('/api/ai-test', async (req, res) => {
   }
 });
 
+// Process Proposal & Tailoring endpoint
+app.post('/api/process-proposal', async (req, res) => {
+  try {
+    const scenarioData = req.body;
+
+    // Validate required fields
+    if (!scenarioData.scenario || !scenarioData.projectName || !scenarioData.requirements) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: scenario, projectName, and requirements are required' 
+      });
+    }
+
+    // Check if Gemini service is configured
+    if (!geminiService.isConfigured()) {
+      return res.status(503).json({ 
+        error: 'AI service not available. Please configure GEMINI_API_KEY.' 
+      });
+    }
+
+    // Generate process proposal
+    const proposal = await geminiService.generateProcessProposal(scenarioData);
+
+    res.json({
+      success: true,
+      analysis: proposal.analysis,
+      citations: proposal.citations,
+      timestamp: proposal.timestamp,
+      scenarioInfo: {
+        scenario: scenarioData.scenario,
+        projectName: scenarioData.projectName,
+        duration: scenarioData.duration,
+        teamSize: scenarioData.teamSize
+      }
+    });
+
+  } catch (error) {
+    console.error('Process proposal generation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate process proposal',
+      details: error.message 
+    });
+  }
+});
+
 // Get specific document
 app.get('/api/document/:standard', (req, res) => {
   try {
@@ -652,6 +696,7 @@ app.listen(PORT, () => {
   console.log(`   GET /api/search?q=<query> - Search across all standards`);
   console.log(`   GET /api/compare?q=<query> - Compare query across standards`);
   console.log(`   POST /api/ai-compare - AI-powered comparison analysis`);
+  console.log(`   POST /api/process-proposal - Generate tailored process proposals`);
   console.log(`   GET /api/ai-test - Test Gemini API connection`);
   console.log(`   GET /api/document/<standard> - Get full document`);
   
