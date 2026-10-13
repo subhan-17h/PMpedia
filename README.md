@@ -1,361 +1,182 @@
-# PMpedia 📚
+# PM Standards Agentic RAG Assistant
 
-**PMpedia** is a comprehensive project management standards search and comparison platform that enables users to explore, search, and compare content across multiple project management frameworks including PMBOK 7, PRINCE2, ISO 21500, and ISO 21502.
+An intelligent RAG (Retrieval-Augmented Generation) web application that compares, searches, and answers questions across three major project management standards:
 
-## 🌟 Features
+- **PMBOK 7th Edition** — PMI's guide to the Project Management Body of Knowledge
+- **PRINCE2** — Projects IN Controlled Environments methodology
+- **ISO 21502:2020** — International standard for project management
 
-### Core Functionality
-- **🔍 Intelligent Search**: Advanced semantic search across multiple project management standards
-- **⚖️ Cross-Standard Comparison**: Side-by-side comparison of search results from different standards
-- **📊 Document Statistics**: Comprehensive analytics of processed documents
-- **📖 Markdown Viewer**: Live preview of formatted markdown documents with navigation
-- **🎯 Advanced Filtering**: Filter results by document type, relevance, and content
-- **💡 Interactive UI**: Modern, responsive interface with consistent dark theme
-
-### Search Capabilities
-- **Multi-Standard Search**: Simultaneous search across PMBOK 7, PRINCE2, ISO 21500, and ISO 21502
-- **Semantic Matching**: Intelligent content matching using natural language processing
-- **Context-Aware Results**: Results include section hierarchies and parent context
-- **Expandable Content**: Toggle between summary and full content views
-- **Matched Terms Highlighting**: Visual indication of search term matches
-
-### Comparison Features
-- **Visual Comparison Grid**: Side-by-side view of results from different standards
-- **Standard Toggles**: Selectively enable/disable specific standards in comparison
-- **Breadcrumb Navigation**: Clear hierarchical context for each result
-- **Summary Statistics**: Quick overview of search results across all standards
-
-### Document Viewing Features
-- **Markdown Preview**: Rich markdown rendering with full document formatting
-- **Interactive Navigation**: Browse through different standards and sections
-- **Mathematical Notation**: Support for KaTeX mathematical expressions
-- **Image Support**: Embedded images and diagrams from source documents
-- **Responsive Layout**: Optimized viewing experience across all devices
-
-## 🏗️ Architecture
-
-### Frontend (React.js)
-- **Modern React Application**: Built with React 19.2.0 and functional components
-- **Component-Based Architecture**: Modular design with reusable components
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Glass Morphism UI**: Modern design with backdrop blur effects and rounded borders
-- **Markdown Rendering**: Advanced markdown support with react-markdown, remark-gfm, and rehype-katex
-- **Consistent Dark Theme**: Professional dark interface with accent color coding
-
-### Backend (Node.js + Express)
-- **RESTful API**: Clean API endpoints for search and comparison
-- **Document Processing**: Python-based PDF processing and text extraction
-- **Natural Language Processing**: Advanced text analysis and matching
-- **JSON Data Storage**: Processed documents stored in structured JSON format
-
-### Data Processing Pipeline
-- **PDF Extraction**: Convert PDF documents to structured text
-- **Section Parsing**: Intelligent section and hierarchy detection
-- **Content Indexing**: Optimized search index creation
-- **Metadata Enrichment**: Page numbers, levels, and contextual information
-
-## 📁 Project Structure
+## Architecture
 
 ```
-PMpedia/
-├── frontend/                 # React.js frontend application
-│   ├── public/              # Static assets
+┌─────────────────────────────────────────────────────────┐
+│                    React Frontend                        │
+│  ┌──────────────┐  ┌──────────────────────────────────┐ │
+│  │  Search Mode  │  │          Agent Mode              │ │
+│  │  • Query      │  │  • Question → Answer             │ │
+│  │  • Filters    │  │  • Coverage badge                │ │
+│  │  • Results    │  │  • Source citations               │ │
+│  │              │  │  • Agent trace visualization      │ │
+│  └──────────────┘  └──────────────────────────────────┘ │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTP (Vite proxy)
+┌────────────────────────▼────────────────────────────────┐
+│                  FastAPI Backend                         │
+│  ┌──────────┐ ┌──────────┐ ┌──────────────────────────┐│
+│  │  /health │ │ /search  │ │    /agent/query           ││
+│  └──────────┘ └──────────┘ └──────────┬───────────────┘│
+│                                        │                │
+│  ┌─────────────────────────────────────▼──────────────┐ │
+│  │             Agentic RAG Orchestrator               │ │
+│  │  Intent → Router → Query Gen → Retrieve →          │ │
+│  │  Coverage Check → Rewrite → Answer → Trace         │ │
+│  └──────────────────────┬─────────────────────────────┘ │
+│                         │                               │
+│  ┌──────────────────────▼─────────────────────────────┐ │
+│  │              Retrieval Layer                        │ │
+│  │  sentence-transformers → ChromaDB → Results         │ │
+│  └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+## RAG Techniques Demonstrated
+
+| Technique | Implementation |
+|-----------|---------------|
+| **Agentic RAG** | Multi-step autonomous workflow with 8 agent components |
+| **Router RAG** | Routes queries to relevant standards based on intent |
+| **Corrective RAG** | Rewrites queries when evidence coverage is insufficient |
+| **Multi-query RAG** | Generates standard-specific queries with domain vocabulary |
+| **Metadata-aware RAG** | Uses section headings, standard tags, and deep links |
+
+## Tech Stack
+
+- **Frontend:** React 18, Vite, react-markdown
+- **Backend:** Python, FastAPI, Pydantic
+- **Embeddings:** sentence-transformers (`all-MiniLM-L6-v2`)
+- **Vector DB:** ChromaDB (persistent, local)
+- **Styling:** Custom CSS with glassmorphism dark theme
+
+## Quick Start
+
+### 1. Backend Setup
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Run Ingestion
+
+This parses the PM standard documents, chunks them, generates embeddings, and stores them in ChromaDB:
+
+```bash
+cd backend
+source venv/bin/activate
+python -m app.ingestion.ingest
+```
+
+### 3. Start Backend Server
+
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+```
+
+### 4. Start Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** in your browser.
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/health` | Health check with chunk count |
+| `POST` | `/api/search` | Semantic search with standard filtering |
+| `POST` | `/api/agent/query` | Full agentic RAG workflow |
+
+### Example: Agent Query
+
+```bash
+curl -X POST http://localhost:8000/api/agent/query \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Compare risk management across all three standards"}'
+```
+
+## Demo Questions
+
+1. *"Compare how PMBOK7, PRINCE2, and ISO 21502 handle risk management"*
+2. *"What is the role of a project sponsor in ISO 21502?"*
+3. *"How does PRINCE2 define project governance?"*
+4. *"Explain stakeholder engagement across all three standards"*
+5. *"What quality management practices does PMBOK7 recommend?"*
+6. *"Where does PRINCE2 discuss change control?"*
+7. *"Compare planning approaches in all three standards"*
+
+## Agent Workflow
+
+```
+User Question
+    │
+    ▼
+┌─ Intent Classification ─┐  (rule-based: 7 intent types)
+    │
+    ▼
+┌─ Standards Routing ──────┐  (detects mentioned standards)
+    │
+    ▼
+┌─ Query Generation ───────┐  (standard-specific vocabulary)
+    │
+    ▼
+┌─ Semantic Retrieval ─────┐  (ChromaDB cosine similarity)
+    │
+    ▼
+┌─ Coverage Check ─────────┐  (scores, counts per standard)
+    │
+    ├── Sufficient? → Generate Answer
+    │
+    └── Insufficient? → Rewrite Queries → Re-retrieve → Generate Answer
+                                                            │
+                                                            ▼
+                                                    Final Answer + Sources + Trace
+```
+
+## Project Structure
+
+```
+pmpedia/
+├── backend/
+│   ├── app/
+│   │   ├── agent/         # 8 agent components
+│   │   ├── api/           # FastAPI routes
+│   │   ├── ingestion/     # Document loading, chunking, embedding
+│   │   ├── models/        # Pydantic schemas
+│   │   ├── retrieval/     # Embeddings, vector store, retriever
+│   │   └── main.py        # FastAPI application
+│   └── requirements.txt
+├── frontend/
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   │   ├── SearchInterface.js      # Main search interface
-│   │   │   ├── ComparisonView.js       # Cross-standard comparison
-│   │   │   ├── DocumentStats.js       # Analytics dashboard
-│   │   │   ├── MarkdownViewer.js       # Document preview component
-│   │   │   └── Settings.js             # Application settings
-│   │   ├── App.js           # Main application component
-│   │   └── index.js         # Application entry point
-│   └── package.json         # Frontend dependencies
-├── backend/                 # Node.js backend server
-│   ├── data/
-│   │   ├── raw/            # Original PDF documents
-│   │   │   ├── pmbok7.pdf
-│   │   │   ├── prince2.pdf
-│   │   │   └── iso21500.pdf
-│   │   └── processed/      # Processed JSON data
-│   │       ├── pmbok.json
-│   │       ├── prince2.json
-│   │       └── iso21502.json
-│   ├── markdowns/          # Markdown document files
-│   │   ├── iso21500_output/
-│   │   ├── iso21502_output/
-│   │   ├── pmbok7_output/
-│   │   └── prince2_output/
-│   ├── server.js           # Express server and API endpoints
-│   ├── process_pdf.py      # Python document processing script
-│   ├── package.json        # Backend dependencies
-│   └── requirements.txt    # Python dependencies
-└── README.md               # Project documentation
+│   │   ├── api/           # Backend API client
+│   │   ├── components/    # React components
+│   │   ├── App.jsx
+│   │   └── index.css      # Design system
+│   └── package.json
+├── input/                 # Source PM standard documents
+│   ├── pmbok7.md
+│   ├── prince2.md
+│   └── iso21502.md
+└── README.md
 ```
 
-## 🚀 Getting Started
+## License
 
-### Prerequisites
-- **Node.js** (v16 or higher)
-- **Python** (v3.8 or higher)
-- **npm** or **yarn** package manager
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/subhan-17h/PMpedia.git
-   cd PMpedia
-   ```
-
-2. **Install Backend Dependencies**
-   ```bash
-   cd backend
-   npm install
-   
-   # Install Python dependencies
-   pip install -r requirements.txt
-   ```
-
-3. **Install Frontend Dependencies**
-   ```bash
-   cd ../frontend
-   npm install
-   ```
-
-### Key Dependencies
-
-#### Frontend
-- **react-markdown**: Advanced markdown rendering with custom components
-- **remark-gfm**: GitHub Flavored Markdown support (tables, strikethrough, task lists)
-- **rehype-katex & remark-math**: Mathematical expression rendering
-- **React 19.2.0**: Latest React with improved performance and features
-
-#### Backend  
-- **Express.js**: Web application framework for API endpoints
-- **Python**: Document processing and text extraction utilities
-
-4. **Process Documents (Optional)**
-   ```bash
-   cd ../backend
-   python process_pdf.py
-   ```
-   *Note: Pre-processed JSON files are included, so this step is optional unless you want to reprocess the documents.*
-
-### Running the Application
-
-1. **Start the Backend Server**
-   ```bash
-   cd backend
-   npm start
-   # Server will run on http://localhost:5000
-   ```
-
-2. **Start the Frontend Application**
-   ```bash
-   cd frontend
-   npm start
-   # Application will open on http://localhost:3000
-   ```
-
-3. **Access the Application**
-   Open your browser and navigate to `http://localhost:3000`
-
-## � Usage Guide
-
-### Navigation
-- **Search Interface**: Main search functionality with cross-standard comparison
-- **Document Stats**: Analytics and statistics dashboard
-- **Markdown Viewer**: Browse and read formatted documents with live preview
-- **Settings**: Application configuration and preferences
-
-### Using the Markdown Viewer
-1. **Select Documents**: Click "Markdown Viewer" in the sidebar
-2. **Choose Standard**: Select from PMBOK 7, PRINCE2, ISO 21500, or ISO 21502
-3. **Browse Content**: Navigate through formatted sections with proper styling
-4. **View Images**: Embedded diagrams and figures display automatically
-5. **Mathematical Expressions**: KaTeX renders formulas and equations seamlessly
-
-### Search Features
-- Use natural language queries for best results
-- Enable/disable specific standards using toggles
-- View results in summary or full content modes
-- Compare findings across multiple standards simultaneously
-
-## �🔧 API Endpoints
-
-### Search API
-- **GET** `/api/search?q={query}&standards={standards}&limit={limit}`
-  - Search across specified standards
-  - Query parameters:
-    - `q`: Search query string
-    - `standards`: Comma-separated list (pmbok,prince2,iso)
-    - `limit`: Maximum results per standard (default: 10)
-
-### Comparison API
-- **GET** `/api/compare?q={query}&limit={limit}`
-  - Compare results across all standards
-  - Returns structured comparison data with summary statistics
-
-### Statistics API
-- **GET** `/api/stats`
-  - Get document statistics and metadata
-  - Returns section counts, processing information, and document details
-
-### Markdown API
-- **GET** `/api/markdown/documents`
-  - Get list of available markdown documents
-  - Returns document metadata and availability status
-
-- **GET** `/api/markdown/{document}`
-  - Retrieve specific markdown document content
-  - Supports: `iso21500`, `iso21502`, `pmbok7`, `prince2`
-  - Returns formatted markdown with embedded images and metadata
-
-## 📋 Supported Standards
-
-### PMBOK 7 (Project Management Body of Knowledge)
-- **Publisher**: Project Management Institute (PMI)
-- **Focus**: Principles-based approach to project management
-- **Content**: Performance domains, project lifecycle, and tailoring guidance
-
-### PRINCE2 (Projects in Controlled Environments)
-- **Publisher**: AXELOS
-- **Focus**: Process-driven project management methodology
-- **Content**: Themes, processes, and management products
-
-### ISO 21500 (Project Management Guidelines)
-- **Publisher**: International Organization for Standardization
-- **Focus**: International standard for project management
-- **Content**: Process groups, knowledge areas, and best practices
-
-### ISO 21502 (Project, Programme and Portfolio Management)
-- **Publisher**: International Organization for Standardization
-- **Focus**: Guidance on project, programme and portfolio management
-- **Content**: Management principles, processes, and organizational governance
-
-## 🛠️ Development
-
-### Frontend Development
-```bash
-cd frontend
-npm run start    # Development server with hot reload
-npm run build    # Production build
-npm run test     # Run test suite
-```
-
-### Backend Development
-```bash
-cd backend
-npm run dev      # Development server with nodemon
-npm run start    # Production server
-```
-
-### Adding New Standards
-
-1. **Add PDF Document**
-   - Place PDF in `backend/data/raw/`
-
-2. **Process Document**
-   ```bash
-   cd backend
-   python process_pdf.py --input "data/raw/new_standard.pdf" --output "data/processed/new_standard.json"
-   ```
-
-3. **Update Backend**
-   - Modify `server.js` to include new standard in search endpoints
-   - Update standard mappings and display names
-
-4. **Update Frontend**
-   - Add new standard to `standardDisplayNames` in components
-   - Update CSS classes and color schemes
-
-## 🧪 Testing
-
-### Backend Testing
-```bash
-cd backend
-# Test API endpoints
-curl "http://localhost:5000/api/search?q=risk&standards=pmbok,prince2,iso&limit=5"
-curl "http://localhost:5000/api/compare?q=stakeholder"
-curl "http://localhost:5000/api/stats"
-curl "http://localhost:5000/api/markdown/documents"
-curl "http://localhost:5000/api/markdown/pmbok7"
-```
-
-### Frontend Testing
-```bash
-cd frontend
-npm test                    # Run unit tests
-npm test -- --coverage     # Run tests with coverage report
-```
-
-## 🚀 Deployment
-
-### Production Build
-1. **Build Frontend**
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. **Configure Backend for Production**
-   ```bash
-   cd backend
-   # Set production environment variables
-   export NODE_ENV=production
-   export PORT=5000
-   ```
-
-3. **Start Production Server**
-   ```bash
-   npm start
-   ```
-
-### Docker Deployment (Optional)
-```dockerfile
-# Example Dockerfile structure
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --production
-COPY . .
-EXPOSE 5000
-CMD ["npm", "start"]
-```
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
-4. **Push to the branch** (`git push origin feature/amazing-feature`)
-5. **Open a Pull Request**
-
-### Code Style Guidelines
-- **Frontend**: Follow React best practices and ESLint configuration
-- **Backend**: Use Express.js conventions and proper error handling
-- **Python**: Follow PEP 8 style guidelines for document processing scripts
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Project Management Institute (PMI)** - PMBOK Guide
-- **AXELOS** - PRINCE2 Methodology
-- **International Organization for Standardization** - ISO 21500 & ISO 21502 Standards
-- **React Community** - Frontend framework and ecosystem
-- **Node.js Community** - Backend runtime and packages
-- **react-markdown Contributors** - Advanced markdown rendering capabilities
-- **KaTeX Team** - Mathematical expression rendering
-
-## 📧 Contact
-
-- **Project Repository**: [PMpedia on GitHub](https://github.com/subhan-17h/PMpedia)
-- **Developer**: Subhan
-- **Version**: 1.1.0
-
----
-
-**PMpedia** - Making project management standards accessible and comparable for everyone! 🚀
+This project is for educational and demonstration purposes.
